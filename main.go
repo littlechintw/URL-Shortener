@@ -239,8 +239,10 @@ func redirect(w http.ResponseWriter, r * http.Request) {
 }
 
 func main() {
+    // init the sqlite3 database
     sqliteInit()
-        // fmt.Print(checkIdExist("12345"))
+
+    // start the server
     mux: = http.NewServeMux()
     mux.HandleFunc("/api/createUrl", shortUrlCreate)
     mux.HandleFunc("/", redirect)
