@@ -25,16 +25,16 @@ type CreateShortUrl struct {
 
 // get now time with the format of "2006-01-02T15:04:05Z"
 func getNowTime() string {
-    loc, _: = time.LoadLocation("UTC")
+    loc, _ := time.LoadLocation("UTC")
     return time.Now().In(loc).Format("2006-01-02T15:04:05Z")
 }
 
 // init sqlite
 func sqliteInit() {
-    db, err: = sql.Open("sqlite3", "./shortUrl.db")
+    db, err := sql.Open("sqlite3", "./shortUrl.db")
     checkErr(err)
 
-    sql_table: = `
+    sql_table := `
     CREATE TABLE IF NOT EXISTS url(
         createTime DATE NULL,
         url VARCHAR(256) NULL,
@@ -48,15 +48,15 @@ func sqliteInit() {
 
 // compare string whether is url
 func urlFormatVerify(url string) bool {
-    match, _: = regexp.MatchString(`^http[s]?:\/\/(www\.)?(.*)?\/?(.)*?$`, url)
+    match, _ := regexp.MatchString(`^http[s]?:\/\/(www\.)?(.*)?\/?(.)*?$`, url)
     return match
 }
 
 // compare string whether is expireTime and not expired
 func expireTimeVerify(expireTime string) bool {
-    match, _: = regexp.MatchString(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`, expireTime)
+    match, _ := regexp.MatchString(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`, expireTime)
     if match {
-        nowTime: = getNowTime()
+        nowTime := getNowTime()
             // compare expireTime whether is expired
         if expireTime > nowTime {
             return true
@@ -67,7 +67,7 @@ func expireTimeVerify(expireTime string) bool {
 
 // compare expireTime whether is expired
 func isExpired(expireTime string) bool {
-    nowTime: = getNowTime()
+    nowTime := getNowTime()
     if expireTime < nowTime {
         return true
     }
@@ -77,16 +77,16 @@ func isExpired(expireTime string) bool {
 // verify shortUrl is valid and the shortUrl in the database is not expired
 func shortUrlVerify(urlPath string)(bool, string) {
     // verify shortUrl is valid
-    match, _: = regexp.MatchString(`^/[a-zA-Z0-9]{4}$`, urlPath)
+    match, _ := regexp.MatchString(`^/[a-zA-Z0-9]{4}$`, urlPath)
     if !match {
         return false, ""
     }
 
     // verify shortId whether is in the database
     var requestShortId = urlPath[1: ]
-    db, err: = sql.Open("sqlite3", "./shortUrl.db")
+    db, err := sql.Open("sqlite3", "./shortUrl.db")
     checkErr(err)
-    rows, err: = db.Query("SELECT * FROM url WHERE shortId = ?", requestShortId)
+    rows, err := db.Query("SELECT * FROM url WHERE shortId = ?", requestShortId)
     checkErr(err)
 
     var createTime time.Time
@@ -118,9 +118,9 @@ func checkErr(err error) {
 
 // check the shortId whether is in the database
 func checkIdExist(id string) bool {
-    db, err: = sql.Open("sqlite3", "./shortUrl.db")
+    db, err := sql.Open("sqlite3", "./shortUrl.db")
     checkErr(err)
-    rows, err: = db.Query("SELECT * FROM url WHERE shortId = ?", id)
+    rows, err := db.Query("SELECT * FROM url WHERE shortId = ?", id)
     checkErr(err)
     defer rows.Close()
     for rows.Next() {
@@ -134,14 +134,14 @@ func shortIdGenerater() string {
     var n int = 4 // length of shortId
     rand.Seed(time.Now().UnixNano())
     var letterRunes = [] rune("01234556789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    b: = make([] rune, n)
-    for i: = range b {
+    b := make([] rune, n)
+    for i := range b {
         b[i] = letterRunes[rand.Intn(len(letterRunes))]
     }
 
     for (checkIdExist(string(b))) {
-        b: = make([] rune, n)
-        for i: = range b {
+        b := make([] rune, n)
+        for i := range b {
             b[i] = letterRunes[rand.Intn(len(letterRunes))]
         }
     }
@@ -150,16 +150,16 @@ func shortIdGenerater() string {
 
 // write a record into database
 func writeShortUrl(createTime string, url string, shortId string, expireTime string) {
-    db, err: = sql.Open("sqlite3", "./shortUrl.db")
+    db, err := sql.Open("sqlite3", "./shortUrl.db")
     checkErr(err)
         // insert
-    stmt, err: = db.Prepare("INSERT INTO url(createTime, url, shortId, expireTime) values(?,?,?,?)")
+    stmt, err := db.Prepare("INSERT INTO url(createTime, url, shortId, expireTime) values(?,?,?,?)")
     checkErr(err)
 
-    res, err: = stmt.Exec(createTime, url, shortId, expireTime)
+    res, err := stmt.Exec(createTime, url, shortId, expireTime)
     checkErr(err)
 
-    id, err: = res.LastInsertId()
+    id, err := res.LastInsertId()
     checkErr(err)
 
     fmt.Println(id)
@@ -170,17 +170,17 @@ func writeShortUrl(createTime string, url string, shortId string, expireTime str
 func shortUrlCreate(w http.ResponseWriter, r * http.Request) {
     var data CreateShortUrl
 
-    err: = json.NewDecoder(r.Body).Decode( & data)
+    err := json.NewDecoder(r.Body).Decode( & data)
     if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
 
     // set the expireTime to UTC +0
-    layout: = "2006-01-02T15:04:05Z"
-    tmp, err: = time.Parse(layout, data.ExpireAt)
+    layout := "2006-01-02T15:04:05Z"
+    tmp, err := time.Parse(layout, data.ExpireAt)
     tmp = tmp.Add(time.Hour * -8)
-    expireAt: = tmp.Format(layout)
+    expireAt := tmp.Format(layout)
 
     if err != nil {
         fmt.Println(err)
@@ -190,9 +190,9 @@ func shortUrlCreate(w http.ResponseWriter, r * http.Request) {
     if !(urlFormatVerify(data.Url) && expireTimeVerify(expireAt)) {
         w.WriteHeader(403)
         w.Header().Set("Content-Type", "application/json")
-        resp: = make(map[string] string)
+        resp := make(map[string] string)
         resp["message"] = "Forbidden"
-        jsonResp, err: = json.Marshal(resp)
+        jsonResp, err := json.Marshal(resp)
         if err != nil {
             log.Fatalf("Error happened in JSON marshal. Err: %s", err)
         }
@@ -200,18 +200,18 @@ func shortUrlCreate(w http.ResponseWriter, r * http.Request) {
         return
     }
 
-    createTime: = getNowTime()
-    shortId: = shortIdGenerater()
+    createTime := getNowTime()
+    shortId := shortIdGenerater()
     writeShortUrl(createTime, data.Url, shortId, expireAt)
 
     // Return 200 OK and the shortUrl details.
     w.WriteHeader(200)
     w.Header().Set("Content-Type", "application/json")
-    resp: = make(map[string] string)
+    resp := make(map[string] string)
     resp["message"] = "OK"
     resp["id"] = shortId
     resp["shortUrl"] = backendUrl + "/" + shortId
-    jsonResp, err: = json.Marshal(resp)
+    jsonResp, err := json.Marshal(resp)
     if err != nil {
         log.Fatalf("Error happened in JSON marshal. Err: %s", err)
     }
@@ -220,7 +220,7 @@ func shortUrlCreate(w http.ResponseWriter, r * http.Request) {
 
 // api for redirect shortId
 func redirect(w http.ResponseWriter, r * http.Request) {
-    verify, url: = shortUrlVerify(r.URL.Path)
+    verify, url := shortUrlVerify(r.URL.Path)
 
     if verify {
         w.Header().Set("Location", url)
@@ -228,9 +228,9 @@ func redirect(w http.ResponseWriter, r * http.Request) {
     } else {
         w.WriteHeader(404)
         w.Header().Set("Content-Type", "application/json")
-        resp: = make(map[string] string)
+        resp := make(map[string] string)
         resp["message"] = "Not Found"
-        jsonResp, err: = json.Marshal(resp)
+        jsonResp, err := json.Marshal(resp)
         if err != nil {
             log.Fatalf("Error happened in JSON marshal. Err: %s", err)
         }
@@ -243,10 +243,10 @@ func main() {
     sqliteInit()
 
     // start the server
-    mux: = http.NewServeMux()
+    mux := http.NewServeMux()
     mux.HandleFunc("/api/createUrl", shortUrlCreate)
     mux.HandleFunc("/", redirect)
 
-    err: = http.ListenAndServe(":" + backendPort, mux)
+    err := http.ListenAndServe(":" + backendPort, mux)
     log.Fatal(err)
 }
