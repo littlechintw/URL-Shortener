@@ -3,7 +3,7 @@ URL-Shortener
 
 ## 簡介
 
-這是基於 Dcard 2022 Backend Intern 的[作業](https://drive.google.com/file/d/1AreBiHDUYXH6MI5OqWpKP-f6-W0zA8np/view?usp=sharing)，使用者可以自行發送 request 並且獲得一個獨特的 uid，之後可以利用此 uid 獲得縮網址前的網址內容
+這是基於 Dcard 2022 Backend Intern 的 [作業](https://drive.google.com/file/d/1AreBiHDUYXH6MI5OqWpKP-f6-W0zA8np/view?usp=sharing)，使用者可以自行發送 request 並且獲得一個獨特的 uid，之後可以利用此 uid 獲得縮網址前的網址內容
 
 ## 使用工具
 
@@ -29,7 +29,7 @@ URL-Shortener
     - 利用 get request 並搭配 `status code 302` 進行跳轉
     - 如果發現已經過期，將回傳 `error 404`
 - 其他
-    - 時間轉換以符合 db 中存成 UTC +0 的格式
+    - 時間轉換以符合 db 中存成 `UTC +0` 的格式
 
 
 ## 測試
